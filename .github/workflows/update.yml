@@ -1,0 +1,36 @@
+name: Daily Scrape & Deploy
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every 3 days
+    - cron: '0 0 */3 * *'
+  workflow_dispatch: # Allows you to run it manually
+
+jobs:
+  scrape-and-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          pip install requests beautifulsoup4
+
+      - name: Run Scraper
+        run: |
+          python scraper.py
+
+      - name: Commit Data Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Auto-update inventory data"
+          file_pattern: "data/inventory.json"
